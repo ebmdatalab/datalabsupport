@@ -39,12 +39,12 @@ def fetch_messages(folder, **options):
         server.login(os.environ['USER'], os.environ['PASSWORD'])
         server.select_folder(folder)
         if not options['text']:
-            if folder == 'INBOX':
-                criteria = ['UNSEEN']
-            elif folder == 'Sent Items':
+            if folder == 'Sent Items':
                 # "UNSEEN" doesn't work with this folder - they appear to
                 # be defaulted to SEEN when they are posted.
                 criteria = ['SINCE', date.today()]
+            else:
+                criteria = ['UNSEEN']
         else:
             criteria = ['TEXT', options['text']]
         messages = server.search(criteria)
@@ -52,55 +52,57 @@ def fetch_messages(folder, **options):
         return [x[b'RFC822'] for x in server.fetch(messages, 'RFC822').values()]
 
 
-def save_fixtures(folder, **options):
+def save_fixtures(**options):
+    folder = options['folder']
     messages = fetch_messages(folder, **options)
     for i, msg in enumerate(messages):
         with open("/tmp/%s.msg" % i, "wb") as f:
             f.write(msg)
 
 
-def get_messages(folder, **options):
-        for message_data in fetch_messages(folder, options):
-            email_message = email.message_from_bytes(message_data)
-            subject = email_message.get('Subject')
-            from_header = email_message.get('From')
-            from_name = email.utils.getaddresses(
-                [from_header])[0][0]
-            msgid = email_message.get('Message-ID').strip()
-            try:
-                seen = MailMessage.objects.get(pk=msgid)
-            except MailMessage.DoesNotExist:
-                # Create a nicely-formatted version of the message
-                body, mimetype = get_body(email_message)
+def get_messages(**options):
+    folder = options['folder']
+    for message_data in fetch_messages(folder, options):
+        email_message = email.message_from_bytes(message_data)
+        subject = email_message.get('Subject')
+        from_header = email_message.get('From')
+        from_name = email.utils.getaddresses(
+            [from_header])[0][0]
+        msgid = email_message.get('Message-ID').strip()
+        try:
+            seen = MailMessage.objects.get(pk=msgid)
+        except MailMessage.DoesNotExist:
+            # Create a nicely-formatted version of the message
+            body, mimetype = get_body(email_message)
 
-                #reply = quotations.extract_from(body, mimetype)
-                text, sig = signature.extract(body, sender=from_header)
-                msg = "*New message from {}*\n{}".format(
-                    from_name,
-                    HTMLSlacker(text).get_output())
-                opts = {
-                    'channel': "#mailtest",
-                    'text': msg
-                }
+            #reply = quotations.extract_from(body, mimetype)
+            text, sig = signature.extract(body, sender=from_header)
+            msg = "*New message from {}*\n{}".format(
+                from_name,
+                HTMLSlacker(text).get_output())
+            opts = {
+                'channel': "#mailtest",
+                'text': msg
+            }
 
-                # Attempt to thread any email conversation as a Slack thread
-                references = email_message.get('References', '').split()
-                thread = MailMessage.objects.filter(msgid__in=references)
-                if thread:
-                    opts['thread_ts'] = thread.first().slackthread_ts
+            # Attempt to thread any email conversation as a Slack thread
+            references = email_message.get('References', '').split()
+            thread = MailMessage.objects.filter(msgid__in=references)
+            if thread:
+                opts['thread_ts'] = thread.first().slackthread_ts
 
-                sc = SlackClient(os.environ['SLACK_TOKEN'])
-                response = sc.api_call(
-                    "chat.postMessage",
-                    **opts
-                )
-                if response['ok']:
-                    ts = response['ts']
-                    msg, created = MailMessage.objects.get_or_create(
-                        subject=subject,
-                        msgid=msgid)
-                    msg.slackthread_ts = ts
-                    msg.save()
+            sc = SlackClient(os.environ['SLACK_TOKEN'])
+            response = sc.api_call(
+                "chat.postMessage",
+                **opts
+            )
+            if response['ok']:
+                ts = response['ts']
+                msg, created = MailMessage.objects.get_or_create(
+                    subject=subject,
+                    msgid=msgid)
+                msg.slackthread_ts = ts
+                msg.save()
 
 
 class Command(BaseCommand):
@@ -113,9 +115,13 @@ class Command(BaseCommand):
             help="For debugging, limit results in "
             "folder to those matching the given text")
 
+        parser.add_argument(
+            '--folder',
+            required=True,
+            help="IMAP folder to check")
+
     def handle(self, *args, **options):
         import talon
         # loads machine learning classifiers
         talon.init()
-        save_fixtures("INBOX", **options)
-        #get_messages("Sent Items", **options)
+        get_messages(**options)
