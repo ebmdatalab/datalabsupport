@@ -1,0 +1,10 @@
+[
+  {
+    "model": "mail.mailmessage",
+    "pk": "<ACwNqZkrRDYA9C3A9mBNB=r1K962hYCwZ0WRQT0jExsotaF-nQ@mail.gmail.com>",
+    "fields": {
+      "subject": "Re: Seb says hi",
+      "slackthread_ts": "1538671906.000100"
+    }
+  }
+]

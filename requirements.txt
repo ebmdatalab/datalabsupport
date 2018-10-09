@@ -1,0 +1,6 @@
+imapclient
+slackclient
+Django
+talon
+git+https://github.com/sebbacon/html-slacker
+django-dotenv

@@ -1,0 +1,3 @@
+Make a PR for linebreak support in htmlslacker
+Set up cron jobs to monitor inbox and sent items
+Make deploy script
