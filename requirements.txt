@@ -2,5 +2,6 @@ imapclient
 slackclient
 Django
 talon
-git+https://github.com/sebbacon/html-slacker
+html-slacker
 django-dotenv
+fabric3
