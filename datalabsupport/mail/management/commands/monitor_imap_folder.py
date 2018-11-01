@@ -34,12 +34,12 @@ def get_body(email_message):
     return body, part.get_content_type()
 
 
-def fetch_messages(folder, **options):
+def fetch_messages(**options):
     with IMAPClient(settings.IMAP_HOST) as server:
         server.login(os.environ['USER'], os.environ['PASSWORD'])
-        server.select_folder(folder)
+        server.select_folder(options['folder'])
         if not options['text']:
-            if folder == 'Sent Items':
+            if options['folder'] == 'Sent Items':
                 # "UNSEEN" doesn't work with this folder - they appear to
                 # be defaulted to SEEN when they are posted.
                 criteria = ['SINCE', date.today()]
@@ -53,16 +53,14 @@ def fetch_messages(folder, **options):
 
 
 def save_fixtures(**options):
-    folder = options['folder']
-    messages = fetch_messages(folder, **options)
+    messages = fetch_messages(**options)
     for i, msg in enumerate(messages):
         with open("/tmp/%s.msg" % i, "wb") as f:
             f.write(msg)
 
 
 def get_messages(**options):
-    folder = options['folder']
-    for message_data in fetch_messages(folder, options):
+    for message_data in fetch_messages(**options):
         email_message = email.message_from_bytes(message_data)
         subject = email_message.get('Subject')
         from_header = email_message.get('From')
@@ -75,8 +73,8 @@ def get_messages(**options):
             # Create a nicely-formatted version of the message
             body, mimetype = get_body(email_message)
 
-            #reply = quotations.extract_from(body, mimetype)
-            text, sig = signature.extract(body, sender=from_header)
+            reply = quotations.extract_from(body, mimetype)
+            text, sig = signature.extract(reply, sender=from_header)
             msg = "*New message from {}*\n{}".format(
                 from_name,
                 HTMLSlacker(text).get_output())
