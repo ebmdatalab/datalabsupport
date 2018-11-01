@@ -79,7 +79,7 @@ def get_messages(**options):
                 from_name,
                 HTMLSlacker(text).get_output())
             opts = {
-                'channel': "#mailtest",
+                'channel': "#doorbell2",
                 'text': msg
             }
 
