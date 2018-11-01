@@ -1,4 +1,4 @@
 #!/bin/sh
 
-*/3 * * * * root python /var/www/datalabsupport/venv/bin/python manage.py monitor_imap_folder --folder INBOX
-*/3 * * * * root python /var/www/datalabsupport/venv/bin/python manage.py monitor_imap_folder --folder "Sent Items"
+*/3 * * * * root python /var/www/datalabsupport/venv/bin/python manage.py monitor_imap_folder --folder INBOX  --settings=datalabsupport.settings
+*/3 * * * * root python /var/www/datalabsupport/venv/bin/python manage.py monitor_imap_folder --folder "Sent Items" --settings=datalabsupport.settings
