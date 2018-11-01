@@ -40,10 +40,10 @@ def pip_install():
 def update_from_git():
     # clone or update code
     if not exists('datalabsupport/.git'):
-        run(env.git_code_key + "git clone -q git@github.com:ebmdatalab/datalabsupport.git")
+        run("git clone -q git@github.com:ebmdatalab/datalabsupport.git")
     else:
         with cd("datalabsupport"):
-            run(env.git_code_key + "git pull -q")
+            run("git pull -q")
 
 def setup_cron():
     run('cp %s/datalabsupport/deploy/crontab-%s /etc/cron.d/' % (env.path, env.app))
