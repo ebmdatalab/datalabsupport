@@ -23,14 +23,13 @@ def get_body(email_message):
     """
     body = None
     for part in email_message.walk():
-        if part.get_content_type() == 'text/plain':
-            body = part.get_payload()
-            break
         if part.get_content_type() == 'text/html':
             body = part.get_payload(decode=True)
             if body:
                 body = body.decode('utf8')
                 break
+        if part.get_content_type() == 'text/plain':
+            body = part.get_payload()
     return body, part.get_content_type()
 
 
