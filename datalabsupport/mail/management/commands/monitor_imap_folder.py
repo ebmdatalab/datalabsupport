@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from talon import quotations
 from talon import signature
+from bs4 import BeautifulSoup
 
 import email
 import os
@@ -26,7 +27,7 @@ def get_body(email_message):
         if part.get_content_type() == 'text/html':
             body = part.get_payload(decode=True)
             if body:
-                body = body.decode('utf8')
+                body = BeautifulSoup(body).prettify()
                 break
         if part.get_content_type() == 'text/plain':
             body = part.get_payload()

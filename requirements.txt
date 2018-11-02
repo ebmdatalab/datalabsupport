@@ -5,3 +5,4 @@ talon
 git+https://github.com/sebbacon/html-slacker
 django-dotenv
 fabric3
+beautifulsoup4
