@@ -1,0 +1,9 @@
+language: python
+services:
+  - postgresql
+python:
+  - "3.6"
+before_script:
+  - cp environment-sample environment
+script:
+  - cd datalabsupport && ./manage.py test --settings=datalabsupport.settings
