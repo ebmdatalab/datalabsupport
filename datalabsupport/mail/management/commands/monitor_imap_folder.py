@@ -60,6 +60,7 @@ def save_fixtures(**options):
 
 def get_messages(**options):
     for message_data in fetch_messages(**options):
+        channel = options['channel']
         email_message = email.message_from_bytes(message_data)
         subject = email_message.get('Subject')
         from_header = email_message.get('From')
@@ -78,7 +79,7 @@ def get_messages(**options):
                 from_name,
                 HTMLSlacker(text).get_output())
             opts = {
-                'channel': "#doorbell2",
+                'channel': channel,
                 'text': msg
             }
 
@@ -111,6 +112,11 @@ class Command(BaseCommand):
             '--text',
             help="For debugging, limit results in "
             "folder to those matching the given text")
+
+        parser.add_argument(
+            '--channel',
+            required=True,
+            help="Slack channel to post to")
 
         parser.add_argument(
             '--folder',

@@ -1,4 +1,6 @@
 #!/bin/sh
 
-*/3 * * * * root /var/www/datalabsupport/venv/bin/python /var/www/datalabsupport/datalabsupport/datalabsupport/manage.py monitor_imap_folder --folder INBOX  --settings=datalabsupport.settings
-*/3 * * * * root /var/www/datalabsupport/venv/bin/python /var/www/datalabsupport/datalabsupport/datalabsupport/manage.py monitor_imap_folder --folder "Sent Items" --settings=datalabsupport.settings
+*/3 * * * * root /var/www/datalabsupport/venv/bin/python /var/www/datalabsupport/datalabsupport/datalabsupport/manage.py monitor_imap_folder --folder INBOX --channel='#mailtest2' --settings=datalabsupport.settings
+*/3 * * * * root /var/www/datalabsupport/venv/bin/python /var/www/datalabsupport/datalabsupport/datalabsupport/manage.py monitor_imap_folder --folder "INBOX/Retractobot" --channel='#mailtest2' --settings=datalabsupport.settings
+*/3 * * * * root /var/www/datalabsupport/venv/bin/python /var/www/datalabsupport/datalabsupport/datalabsupport/manage.py monitor_imap_folder --folder "INBOX/OpenPathology" --channel='#mailtest2' --settings=datalabsupport.settings
+*/3 * * * * root /var/www/datalabsupport/venv/bin/python /var/www/datalabsupport/datalabsupport/datalabsupport/manage.py monitor_imap_folder --folder "Sent Items" --channel='#mailtest2' --settings=datalabsupport.settings

@@ -41,7 +41,7 @@ class TestEmailParsing(TestCase):
     def test_message_parsing_1(self, mock_slack):
         mock_slack.return_value.api_call.return_value = {'ok': True, 'ts': '1234'}
 
-        get_messages(folder='INBOX')
+        get_messages(folder='INBOX', channel='#mailtest')
         mock_slack.return_value.api_call.assert_called_with(
             'chat.postMessage',
             channel='#mailtest',
@@ -53,7 +53,7 @@ class TestEmailParsing(TestCase):
     def test_message_parsing_2(self, mock_slack):
         mock_slack.return_value.api_call.return_value = {'ok': True, 'ts': '1234'}
 
-        get_messages(folder='INBOX')
+        get_messages(folder='INBOX', channel='#mailtest')
         expected = ("View the <http://info.sagepub.co.uk/c/"
                     "11o8zNX6zKkZTZfhD08iisMdxM3A|_blank|submission "
                     "guidelines> for details")
@@ -68,7 +68,7 @@ class TestEmailParsing(TestCase):
         """
         from mail.management.commands.monitor_imap_folder import get_messages
         mock_slack.return_value.api_call.return_value = {'ok': True, 'ts': '1234'}
-        get_messages(folder='INBOX')
+        get_messages(folder='INBOX', channel='#mailtest')
         mock_slack.return_value.api_call.assert_not_called()
 
     @patch('mail.management.commands.monitor_imap_folder.fetch_messages',
@@ -79,7 +79,7 @@ class TestEmailParsing(TestCase):
         """
         from mail.management.commands.monitor_imap_folder import get_messages
         mock_slack.return_value.api_call.return_value = {'ok': True, 'ts': '1234'}
-        get_messages(folder='INBOX')
+        get_messages(folder='INBOX', channel='#mailtest')
         mock_slack.return_value.api_call.assert_called_with(
             'chat.postMessage',
             channel='#mailtest',
