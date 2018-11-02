@@ -64,6 +64,7 @@ def get_messages(**options):
         email_message = email.message_from_bytes(message_data)
         subject = email_message.get('Subject')
         from_header = email_message.get('From')
+        to_header = email_message.get('To')
         from_name = email.utils.getaddresses(
             [from_header])[0][0]
         msgid = email_message.get('Message-ID').strip()
@@ -75,8 +76,10 @@ def get_messages(**options):
 
             reply = quotations.extract_from(body, mimetype)
             text, sig = signature.extract(reply, sender=from_header)
-            msg = "*New message from {}*\n{}".format(
+            msg = "_{}_ to _{}_\n*{}*\n\n{}".format(
                 from_name,
+                to_header,
+                subject,
                 HTMLSlacker(text).get_output())
             opts = {
                 'channel': channel,

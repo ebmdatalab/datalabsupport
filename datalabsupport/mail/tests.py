@@ -45,7 +45,7 @@ class TestEmailParsing(TestCase):
         mock_slack.return_value.api_call.assert_called_with(
             'chat.postMessage',
             channel='#mailtest',
-            text='*New message from Seb Bacon*\nfarewell')
+            text='_Seb Bacon_ to _Seb Bacon - ebmdatalab <ebmdatalab@phc.ox.ac.uk>_\n*adieu*\n\nfarewell')
 
     @patch('mail.management.commands.monitor_imap_folder.fetch_messages',
            new=MockIMAPClient(msgid='1'))
@@ -83,5 +83,5 @@ class TestEmailParsing(TestCase):
         mock_slack.return_value.api_call.assert_called_with(
             'chat.postMessage',
             channel='#mailtest',
-            text='*New message from Seb Bacon*\nfarewell reply',
+            text='_Seb Bacon_ to _Seb Bacon - ebmdatalab <ebmdatalab@phc.ox.ac.uk>_\n*adieu*\n\nfarewell reply',
             thread_ts="1538671906.000100")
