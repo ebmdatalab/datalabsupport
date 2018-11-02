@@ -3,13 +3,13 @@ from talon import quotations
 from talon import signature
 
 import email
-import json
 import os
 from imapclient import IMAPClient
 from slackclient import SlackClient
 from mail.models import MailMessage
 from htmlslacker import HTMLSlacker
 from datetime import date
+from datetime import timedelta
 from django.conf import settings
 
 
@@ -38,12 +38,7 @@ def fetch_messages(**options):
         server.login(os.environ['USER'], os.environ['PASSWORD'])
         server.select_folder(options['folder'])
         if not options['text']:
-            if options['folder'] == 'Sent Items':
-                # "UNSEEN" doesn't work with this folder - they appear to
-                # be defaulted to SEEN when they are posted.
-                criteria = ['SINCE', date.today()]
-            else:
-                criteria = ['UNSEEN']
+            criteria = ['SINCE', date.today() - timedelta(hours=1)]
         else:
             criteria = ['TEXT', options['text']]
         messages = server.search(criteria)
