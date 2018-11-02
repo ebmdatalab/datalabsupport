@@ -27,7 +27,7 @@ def get_body(email_message):
         if part.get_content_type() == 'text/html':
             body = part.get_payload(decode=True)
             if body:
-                body = BeautifulSoup(body).prettify()
+                body = str(BeautifulSoup(body))
                 break
         if part.get_content_type() == 'text/plain':
             body = part.get_payload()
