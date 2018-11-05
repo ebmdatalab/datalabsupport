@@ -25,13 +25,14 @@ def get_body(email_message):
     """
     body = None
     for part in email_message.walk():
+        charset = part.get_content_charset('iso-8859-1')
         if part.get_content_type() == 'text/html':
-            body = part.get_payload(decode=True)
+            body = part.get_payload(decode=True).decode(charset, 'replace')
             if body:
                 body = str(BeautifulSoup(body))
                 break
         if part.get_content_type() == 'text/plain':
-            body = part.get_payload(decode=True)
+            body = part.get_payload(decode=True).decode(charset, 'replace')
     return body, part.get_content_type()
 
 
