@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.template.defaultfilters import truncatewords_html
 from talon import quotations
 from talon import signature
 from bs4 import BeautifulSoup
@@ -69,7 +70,6 @@ def get_messages(**options):
         except MailMessage.DoesNotExist:
             # Create a nicely-formatted version of the message
             body, mimetype = get_body(email_message)
-
             reply = quotations.extract_from(body, mimetype)
             text, sig = signature.extract(reply, sender=from_header)
             msg = "_{}_ to _{}_\n*{}*\n\n{}".format(
@@ -77,6 +77,7 @@ def get_messages(**options):
                 to_header,
                 subject,
                 HTMLSlacker(text).get_output())
+            msg = truncatewords_html(msg, 400)
             opts = {
                 'channel': channel,
                 'text': msg
