@@ -80,7 +80,7 @@ def get_messages(**options):
         msgid = email_message.get('Message-ID').strip()
         should_notify = True
         try:
-            if 'text' not in options:
+            if not options.get('text', ''):
                 should_notify = not MailMessage.objects.get(pk=msgid)
         except MailMessage.DoesNotExist:
             pass
