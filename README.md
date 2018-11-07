@@ -9,8 +9,9 @@ filtering, etc etc.
 
 Possible future directions:
 
-* As messages are routed to our shared IMAMP folder via Mailgun, we
+* As messages are routed to our shared IMAP folder via Mailgun, we
   could potentially extend this to handle incoming mail automatically
+* Nicer integrations with Outlook may be possible with native API (see issue #16)
 * Slack bot commands to list unreplied emails (could rely on imap `NOT
   ANSWERED` flags?)
 * Ability to reply inline via Slack
