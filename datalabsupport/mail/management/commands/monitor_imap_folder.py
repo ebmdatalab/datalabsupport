@@ -66,9 +66,13 @@ def get_messages(**options):
         from_name = email.utils.getaddresses(
             [from_header])[0][0]
         msgid = email_message.get('Message-ID').strip()
+        should_notify = True
         try:
-            seen = MailMessage.objects.get(pk=msgid)
+            if 'text' not in options:
+                should_notify = not MailMessage.objects.get(pk=msgid)
         except MailMessage.DoesNotExist:
+            pass
+        if should_notify:
             # Create a nicely-formatted version of the message
             body, mimetype = get_body(email_message)
             reply = quotations.extract_from(body, mimetype)
@@ -113,8 +117,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             '--text',
-            help="For debugging, limit results in "
-            "folder to those matching the given text")
+            help="For debugging, limit results to those matching the "
+            "given text, and resend notifications even if previously seen")
 
         parser.add_argument(
             '--channel',
