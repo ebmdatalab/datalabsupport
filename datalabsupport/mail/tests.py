@@ -61,6 +61,17 @@ class TestEmailParsing(TestCase):
         self.assertIn(expected, returned)
 
     @patch('mail.management.commands.monitor_imap_folder.fetch_messages',
+           new=MockIMAPClient(msgid='2'))
+    @patch('mail.management.commands.monitor_imap_folder.SlackClient')
+    def test_message_parsing_text_newlines(self, mock_slack):
+        mock_slack.return_value.api_call.return_value = {'ok': True, 'ts': '1234'}
+
+        get_messages(folder='INBOX', channel='#mailtest')
+        expected = "What's happened:\r\n2 requests had new responses:"
+        returned = mock_slack.return_value.api_call.call_args[-1]['text']
+        self.assertIn(expected, returned)
+
+    @patch('mail.management.commands.monitor_imap_folder.fetch_messages',
            new=MockIMAPClient(msgid='3'))
     @patch('mail.management.commands.monitor_imap_folder.SlackClient')
     def test_no_repost(self, mock_slack):

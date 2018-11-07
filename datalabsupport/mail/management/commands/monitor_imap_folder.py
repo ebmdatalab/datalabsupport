@@ -73,11 +73,13 @@ def get_messages(**options):
             body, mimetype = get_body(email_message)
             reply = quotations.extract_from(body, mimetype)
             text, sig = signature.extract(reply, sender=from_header)
+            if mimetype == "text/html":
+                text = HTMLSlacker(text).get_output()
             msg = "_{}_ to _{}_\n*{}*\n\n{}".format(
                 from_name,
                 to_header,
                 subject,
-                HTMLSlacker(text).get_output())
+                text)
             msg = truncatewords_html(msg, 400)
             opts = {
                 'channel': channel,
