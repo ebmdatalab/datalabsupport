@@ -50,13 +50,13 @@ class TestEmailParsing(TestCase):
     @patch('mail.management.commands.monitor_imap_folder.fetch_messages',
            new=MockIMAPClient(msgid='1'))
     @patch('mail.management.commands.monitor_imap_folder.SlackClient')
-    def test_message_parsing_2(self, mock_slack):
+    def test_message_link_formatting(self, mock_slack):
         mock_slack.return_value.api_call.return_value = {'ok': True, 'ts': '1234'}
 
         get_messages(folder='INBOX', channel='#mailtest')
-        expected = ("View the <http://info.sagepub.co.uk/c/"
+        expected = ("<http://info.sagepub.co.uk/c/"
                     "11o8zNX6zKkZTZfhD08iisMdxM3A|_blank|submission "
-                    "guidelines> for details")
+                    "guidelines>")
         returned = mock_slack.return_value.api_call.call_args[-1]['text']
         self.assertIn(expected, returned)
 
