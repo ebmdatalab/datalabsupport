@@ -96,3 +96,13 @@ class TestEmailParsing(TestCase):
             channel='#mailtest',
             text='_Seb Bacon_ to _Seb Bacon - ebmdatalab <ebmdatalab@phc.ox.ac.uk>_\n*adieu*\n\nfarewell reply',
             thread_ts="1538671906.000100")
+
+    @patch('mail.management.commands.monitor_imap_folder.fetch_messages',
+           new=MockIMAPClient(msgid='5'))
+    @patch('mail.management.commands.monitor_imap_folder.SlackClient')
+    def test_message_encoding(self, mock_slack):
+        mock_slack.return_value.api_call.return_value = {'ok': True, 'ts': '1234'}
+        get_messages(folder='INBOX', channel='#mailtest')
+        expected = 'RE:\xa0enquiry / electronic components'
+        returned = mock_slack.return_value.api_call.call_args[-1]['text']
+        self.assertIn(expected, returned)

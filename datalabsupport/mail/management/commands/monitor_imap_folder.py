@@ -4,6 +4,7 @@ from talon import quotations
 from talon import signature
 from bs4 import BeautifulSoup
 
+from email.header import decode_header
 import email
 import os
 from imapclient import IMAPClient
@@ -46,7 +47,18 @@ def fetch_messages(**options):
             criteria = ['TEXT', options['text']]
         messages = server.search(criteria)
         # keys are IMAP message ids
-        return [x[b'RFC822'] for x in server.fetch(messages, 'RFC822').values()]
+        return [x[b'RFC822'] for x in
+                server.fetch(messages, 'RFC822').values()]
+
+
+def decoded_header(encoded_string):
+    output = ""
+    for unquoted, encoding in decode_header(encoded_string):
+        if encoding:
+            output += unquoted.decode(encoding, 'replace')
+        else:
+            output += unquoted
+    return output
 
 
 def save_fixtures(**options):
@@ -60,7 +72,7 @@ def get_messages(**options):
     for message_data in fetch_messages(**options):
         channel = options['channel']
         email_message = email.message_from_bytes(message_data)
-        subject = email_message.get('Subject')
+        subject = decoded_header(email_message.get('Subject'))
         from_header = email_message.get('From')
         to_header = email_message.get('To')
         from_name = email.utils.getaddresses(
