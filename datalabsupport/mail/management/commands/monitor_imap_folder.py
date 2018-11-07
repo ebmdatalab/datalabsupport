@@ -4,6 +4,7 @@ from talon import quotations
 from talon import signature
 from bs4 import BeautifulSoup
 
+from email.header import decode_header
 import email
 import os
 from imapclient import IMAPClient
@@ -46,7 +47,18 @@ def fetch_messages(**options):
             criteria = ['TEXT', options['text']]
         messages = server.search(criteria)
         # keys are IMAP message ids
-        return [x[b'RFC822'] for x in server.fetch(messages, 'RFC822').values()]
+        return [x[b'RFC822'] for x in
+                server.fetch(messages, 'RFC822').values()]
+
+
+def decoded_header(encoded_string):
+    output = ""
+    for unquoted, encoding in decode_header(encoded_string):
+        if encoding:
+            output += unquoted.decode(encoding, 'replace')
+        else:
+            output += unquoted
+    return output
 
 
 def save_fixtures(**options):
@@ -60,24 +72,30 @@ def get_messages(**options):
     for message_data in fetch_messages(**options):
         channel = options['channel']
         email_message = email.message_from_bytes(message_data)
-        subject = email_message.get('Subject')
+        subject = decoded_header(email_message.get('Subject'))
         from_header = email_message.get('From')
         to_header = email_message.get('To')
         from_name = email.utils.getaddresses(
             [from_header])[0][0]
         msgid = email_message.get('Message-ID').strip()
+        should_notify = True
         try:
-            seen = MailMessage.objects.get(pk=msgid)
+            if 'text' not in options:
+                should_notify = not MailMessage.objects.get(pk=msgid)
         except MailMessage.DoesNotExist:
+            pass
+        if should_notify:
             # Create a nicely-formatted version of the message
             body, mimetype = get_body(email_message)
             reply = quotations.extract_from(body, mimetype)
             text, sig = signature.extract(reply, sender=from_header)
+            if mimetype == "text/html":
+                text = HTMLSlacker(text).get_output()
             msg = "_{}_ to _{}_\n*{}*\n\n{}".format(
                 from_name,
                 to_header,
                 subject,
-                HTMLSlacker(text).get_output())
+                text)
             msg = truncatewords_html(msg, 400)
             opts = {
                 'channel': channel,
@@ -111,8 +129,8 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             '--text',
-            help="For debugging, limit results in "
-            "folder to those matching the given text")
+            help="For debugging, limit results to those matching the "
+            "given text, and resend notifications even if previously seen")
 
         parser.add_argument(
             '--channel',

@@ -50,13 +50,24 @@ class TestEmailParsing(TestCase):
     @patch('mail.management.commands.monitor_imap_folder.fetch_messages',
            new=MockIMAPClient(msgid='1'))
     @patch('mail.management.commands.monitor_imap_folder.SlackClient')
-    def test_message_parsing_2(self, mock_slack):
+    def test_message_link_formatting(self, mock_slack):
         mock_slack.return_value.api_call.return_value = {'ok': True, 'ts': '1234'}
 
         get_messages(folder='INBOX', channel='#mailtest')
-        expected = ("View the <http://info.sagepub.co.uk/c/"
-                    "11o8zNX6zKkZTZfhD08iisMdxM3A|_blank|submission "
-                    "guidelines> for details")
+        expected = ("<http://info.sagepub.co.uk/c/"
+                    "11o8zNX6zKkZTZfhD08iisMdxM3A|submission "
+                    "guidelines>")
+        returned = mock_slack.return_value.api_call.call_args[-1]['text']
+        self.assertIn(expected, returned)
+
+    @patch('mail.management.commands.monitor_imap_folder.fetch_messages',
+           new=MockIMAPClient(msgid='2'))
+    @patch('mail.management.commands.monitor_imap_folder.SlackClient')
+    def test_message_parsing_text_newlines(self, mock_slack):
+        mock_slack.return_value.api_call.return_value = {'ok': True, 'ts': '1234'}
+
+        get_messages(folder='INBOX', channel='#mailtest')
+        expected = "What's happened:\r\n2 requests had new responses:"
         returned = mock_slack.return_value.api_call.call_args[-1]['text']
         self.assertIn(expected, returned)
 
@@ -85,3 +96,13 @@ class TestEmailParsing(TestCase):
             channel='#mailtest',
             text='_Seb Bacon_ to _Seb Bacon - ebmdatalab <ebmdatalab@phc.ox.ac.uk>_\n*adieu*\n\nfarewell reply',
             thread_ts="1538671906.000100")
+
+    @patch('mail.management.commands.monitor_imap_folder.fetch_messages',
+           new=MockIMAPClient(msgid='5'))
+    @patch('mail.management.commands.monitor_imap_folder.SlackClient')
+    def test_message_encoding(self, mock_slack):
+        mock_slack.return_value.api_call.return_value = {'ok': True, 'ts': '1234'}
+        get_messages(folder='INBOX', channel='#mailtest')
+        expected = 'RE:\xa0enquiry / electronic components'
+        returned = mock_slack.return_value.api_call.call_args[-1]['text']
+        self.assertIn(expected, returned)
