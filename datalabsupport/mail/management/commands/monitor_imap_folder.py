@@ -30,7 +30,7 @@ def get_body(email_message):
         if part.get_content_type() == 'text/html':
             body = part.get_payload(decode=True).decode(charset, 'replace')
             if body:
-                body = str(BeautifulSoup(body))
+                body = str(BeautifulSoup(body, features="lxml"))
                 break
         if part.get_content_type() == 'text/plain':
             body = part.get_payload(decode=True).decode(charset, 'replace')
