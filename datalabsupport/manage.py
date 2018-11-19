@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 import os
 import sys
+import warnings
 
 import dotenv
+
+IGNORE_MODULES = 'html5lib'  # See #18
+warnings.filterwarnings("ignore", module=IGNORE_MODULES)
 
 if __name__ == '__main__':
     # We can't do read_dotenv('../environment') because that assumes that when
