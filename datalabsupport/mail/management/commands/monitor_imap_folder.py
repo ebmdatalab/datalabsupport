@@ -105,14 +105,19 @@ def get_messages(**options):
             # Attempt to thread any email conversation as a Slack thread
             references = email_message.get('References', '').split()
             thread = MailMessage.objects.filter(msgid__in=references)
-            if thread:
-                opts['thread_ts'] = thread.first().slackthread_ts
-
             sc = SlackClient(os.environ['SLACK_TOKEN'])
+            # Send the message
             response = sc.api_call(
                 "chat.postMessage",
                 **opts
             )
+            if thread:
+                # Also add it as a thread
+                opts['thread_ts'] = thread.first().slackthread_ts
+                response = sc.api_call(
+                    "chat.postMessage",
+                    **opts
+                )
             if response['ok']:
                 ts = response['ts']
                 msg, created = MailMessage.objects.get_or_create(

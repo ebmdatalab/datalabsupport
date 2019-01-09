@@ -1,6 +1,7 @@
 import glob
 import os
 from unittest.mock import MagicMock
+from unittest.mock import call
 from unittest.mock import patch
 
 from django.test import TestCase
@@ -86,16 +87,37 @@ class TestEmailParsing(TestCase):
            new=MockIMAPClient(msgid='4'))
     @patch('mail.management.commands.monitor_imap_folder.SlackClient')
     def test_threading(self, mock_slack):
-        """A message which is a reply should be threaded in Slack
+        """A message which is a reply should be threaded in Slack, and also
+        posted to the top level
+
         """
         from mail.management.commands.monitor_imap_folder import get_messages
         mock_slack.return_value.api_call.return_value = {'ok': True, 'ts': '1234'}
         get_messages(folder='INBOX', channel='#mailtest')
-        mock_slack.return_value.api_call.assert_called_with(
-            'chat.postMessage',
-            channel='#mailtest',
-            text='_Seb Bacon_ to _Seb Bacon - ebmdatalab <ebmdatalab@phc.ox.ac.uk>_\n*adieu*\n\nfarewell reply',
-            thread_ts="1538671906.000100")
+
+        # First it gets threaded...
+        self.assertEqual(
+            mock_slack.return_value.api_call.mock_calls[0],
+            call(
+                'chat.postMessage',
+                channel='#mailtest',
+                text=('_Seb Bacon_ to _Seb Bacon - ebmdatalab '
+                      '<ebmdatalab@phc.ox.ac.uk>_\n*adieu*\n\n'
+                      'farewell reply'))
+        )
+
+        # ...then it gets posted to the top level
+        self.assertEqual(
+            mock_slack.return_value.api_call.mock_calls[1],
+            call(
+                'chat.postMessage',
+                channel='#mailtest',
+                text=('_Seb Bacon_ to _Seb Bacon - ebmdatalab '
+                      '<ebmdatalab@phc.ox.ac.uk>_\n*adieu*\n\n'
+                      'farewell reply'),
+                thread_ts="1538671906.000100")
+        )
+
 
     @patch('mail.management.commands.monitor_imap_folder.fetch_messages',
            new=MockIMAPClient(msgid='5'))
