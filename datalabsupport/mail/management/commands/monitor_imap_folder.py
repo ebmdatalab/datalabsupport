@@ -38,17 +38,21 @@ def get_body(email_message):
 
 
 def fetch_messages(**options):
-    with IMAPClient(settings.IMAP_HOST) as server:
-        server.login(os.environ['USER'], os.environ['PASSWORD'])
-        server.select_folder(options['folder'])
-        if not options['text']:
-            criteria = ['SINCE', date.today() - timedelta(hours=1)]
-        else:
-            criteria = ['TEXT', options['text']]
-        messages = server.search(criteria)
-        # keys are IMAP message ids
-        return [x[b'RFC822'] for x in
-                server.fetch(messages, 'RFC822').values()]
+    try:
+        with IMAPClient(settings.IMAP_HOST) as server:
+            server.login(os.environ['USER'], os.environ['PASSWORD'])
+            server.select_folder(options['folder'])
+            if not options['text']:
+                criteria = ['SINCE', date.today() - timedelta(hours=1)]
+            else:
+                criteria = ['TEXT', options['text']]
+            messages = server.search(criteria)
+            # keys are IMAP message ids
+            return [x[b'RFC822'] for x in
+                    server.fetch(messages, 'RFC822').values()]
+    except ConnectionResetError:
+        # This happens occasionally due to network oddness
+        pass
 
 
 def decoded_header(encoded_string):
