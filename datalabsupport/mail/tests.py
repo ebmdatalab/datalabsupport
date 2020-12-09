@@ -56,7 +56,7 @@ class TestEmailParsing(TestCase):
 
         get_messages(folder='INBOX', channel='#mailtest')
         expected = ("<http://info.sagepub.co.uk/c/"
-                    "11o8zNX6zKkZTZfhD08iisMdxM3A|submission "
+                    "11o8zNX6zKkZTZfhD08iisMdxM3A|_blank|submission "
                     "guidelines>")
         returned = mock_slack.return_value.api_call.call_args[-1]['text']
         self.assertIn(expected, returned)
