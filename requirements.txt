@@ -1,8 +1,8 @@
-imapclient
+imapclient==2.1.0
 slackclient
-Django
-talon
+Django==2.1.5
+talon==1.4.4
 git+https://github.com/sebbacon/html-slacker
 django-dotenv
 fabric3
-beautifulsoup4
+beautifulsoup4==4.7.1
